@@ -1,0 +1,130 @@
+{
+  "skill_name": "staged-uat",
+  "evals": [
+    {
+      "id": 0,
+      "name": "campaign-structure",
+      "prompt": "We're about to start UAT on Lumina, a multi-tenant clinic-booking SaaS deployed to staging. Three front-ends: platform admin console at https://staging-admin.lumina.test (Super Admins create clinics and invite the first clinic manager), the clinic console at https://staging-console.lumina.test (Clinic Manager + Front-desk staff), and the patient app at https://staging.lumina.test (Patients book and manage appointments). There's a Swagger UI at https://staging-api.lumina.test/docs. We have a temporary-email MCP tool, a Playwright browser-automation tool, and subagents available. The roles are: Super Admin, Clinic Manager, Front-desk, Patient. Set up the full UAT campaign for me — the test structure, the account bootstrap, the scenario plan, how you'll run it and capture evidence across all the roles, and how you'll produce a user manual for each role. IMPORTANT: the staging sites above are described for planning only and are NOT reachable from this machine — do not open a browser or curl them. Produce the written plan/guideline, the scenario matrix, and the orchestration scaffolding you would execute.",
+      "expected_output": "A staged UAT campaign plan: recon, a test-base guideline, a top-down account bootstrap chain (Super Admin -> Clinic Manager/Front-desk -> Patient), a coded scenario matrix including negative/permission scenarios seeded from the deployed OpenAPI, an orchestration scaffold using subagents with structured returns (sequential bootstrap then parallel fan-out), an artifact set (findings/coverage/accounts/manifest), and a per-role manual plan. Bakes in the safety rules: no credential persistence to disk, shared-env prefixing + round-tripping, and content-type-based API result classification.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "staged-phases",
+          "text": "Plan is organized into ordered phases/runs (recon → test base → plan → execute → consolidate → manuals → report), not a flat to-do list."
+        },
+        {
+          "name": "sequential-bootstrap-then-parallel",
+          "text": "Bootstraps accounts sequentially (each tier creates the next) BEFORE fanning independent scenarios out in parallel."
+        },
+        {
+          "name": "topdown-account-chain",
+          "text": "Account bootstrap chain is top-down and correct: Super Admin → Clinic Manager/Front-desk → Patient (who-creates-whom)."
+        },
+        {
+          "name": "scenarios-seeded-from-openapi",
+          "text": "Plans to download/parse the deployed OpenAPI/Swagger as a scenario/coverage source, not only the PRD."
+        },
+        {
+          "name": "negative-permission-scenarios",
+          "text": "Scenario matrix includes negative/permission scenarios (a role attempting forbidden actions / cross-tier isolation)."
+        },
+        {
+          "name": "no-credential-persistence",
+          "text": "States the rule to NOT persist session/cookie/auth-state to disk; re-login from a credentials ledger instead."
+        },
+        {
+          "name": "shared-env-safety",
+          "text": "States shared-env safety: prefix created data AND round-trip state changes (or a dedicated throwaway for irreversible ops)."
+        },
+        {
+          "name": "structured-subagent-returns",
+          "text": "Orchestration scaffold uses subagents returning a structured result (status/evidence/observations/data), not freeform prose."
+        },
+        {
+          "name": "artifact-set-planned",
+          "text": "Plans the durable artifacts: findings log + coverage matrix + accounts ledger (+ screenshot manifest)."
+        },
+        {
+          "name": "per-role-manuals-planned",
+          "text": "Plans one user manual per role, authored from the screenshot evidence."
+        },
+        {
+          "name": "cdn-content-type-classification",
+          "text": "Mentions classifying API responses by content-type / that a fronting CDN can mask 4xx as 200+HTML (skill-specific rigor)."
+        },
+        {
+          "name": "tooling-prerequisites-gate",
+          "text": "Treats external tooling as a prerequisite gate: verify/set up the temp-email service (API key + MCP) and the browser driver (install; for playwright-cli 'playwright-cli install --skills') BEFORE executing, and surface missing setup to the user with concrete steps rather than working around it."
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "manuals-from-evidence",
+      "prompt": "Here's the evidence folder from a finished UAT run of Lumina (a clinic appointment-booking platform), at ./mock-evidence-v3/. Under artifacts/uat01/ you'll find screenshots grouped by flow, plus findings.md, coverage.md, spec-excerpt.md, glossary.md and ui-labels.md. Please write the operation manuals — one per role: Clinic Manager, Front-desk, and Patient — built from this evidence. Save each to ./mock-evidence-v3/manuals/<role>/index.md, referencing the screenshots as figures. These are how-to guides for the real users of each role.",
+      "expected_output": "Three role manuals plus an index. They must read as end-user documentation (no findings#/evidence-path/UAT/實測 provenance in prose), embed only resolving image paths (no fabricated PAT-RESCHED figure), and must not present the spec's 24-hour cancellation restriction as operative given the evidence shows a 2-hour-before cancellation succeeded.",
+      "files": [
+        "./mock-evidence-v3/"
+      ],
+      "assertions": [
+        {
+          "name": "three-role-manuals",
+          "text": "Produces one manual per role (Clinic Manager, Front-desk, Patient) at manuals/<role>/index.md."
+        },
+        {
+          "name": "all-image-links-resolve",
+          "text": "Every embedded image path resolves to a file that exists in the evidence tree — zero dead links, and no figure invented for the screenshot-less PAT-RESCHED flow (script-checkable)."
+        },
+        {
+          "name": "manuals-index-produced",
+          "text": "Produces a manuals index/README listing the role manuals (per the skill's manual-authoring guidance)."
+        },
+        {
+          "name": "no-internal-artifact-references",
+          "text": "Role manuals read as end-user documentation, not UAT reports in disguise: zero internal test provenance in prose — no 'findings #N' citations, no artifacts/uat01/ evidence-path captions, no 'UAT' run talk, no ✅/實測 verification tables. (Image links excluded; a manuals index/README may carry provenance.) Script-checkable via check_manual_purity.py → clean:true."
+        },
+        {
+          "name": "observed-behavior-over-spec-claims",
+          "text": "TRAP (inference, not reading): spec §4.3 states patients may only self-cancel 24h or more before the appointment, but coverage.md records PAT-CANCEL succeeding 2 HOURS before with no time-limit block. The manual must NOT instruct users that the 24-hour restriction applies as fact — it must either describe the observed behaviour (cancellation worked close to the appointment) or explicitly flag the 24h rule as unverified/not enforced. Documenting the spec rule as operative = FAIL."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "scoped-flow-tooling",
+      "prompt": "On our Lumina patient app (https://staging.lumina.test) I want to test just one flow: a new patient receives an email invite from their clinic, clicks the link, signs up, verifies a 6-digit email OTP, and lands on their dashboard. I want a screenshot of each step plus a short how-to for patients. We have a temporary-email MCP and a Playwright browser tool. The site is described but not reachable from this machine, so give me the concrete procedure and any tooling scaffolding you'd use — not a live run.",
+      "expected_output": "A concrete procedure for the single invite->signup->OTP->dashboard flow using temp email + a browser session: captures the email watermark/timestamp BEFORE triggering the send then waits for the message, extracts the invite link and 6-digit OTP from the email, drives a named browser session, saves screenshots with an NN_desc.png per-flow naming scheme, and does NOT persist session/cookies to disk. Appropriately scoped to this one flow (not an insistence on a full multi-run campaign), and includes a short patient-facing how-to.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "watermark-before-send",
+          "text": "Captures the email watermark/timestamp BEFORE triggering the send, then waits for the message."
+        },
+        {
+          "name": "extract-link-and-otp",
+          "text": "Extracts the invite link AND the 6-digit OTP from the received email."
+        },
+        {
+          "name": "named-browser-session",
+          "text": "Prescribes role-isolated named browser sessions (e.g. -s=patient / -s=clinic) rather than a single shared/default context, so concurrent roles don't collide. Credit a run that names an environment constraint (e.g. a single-context Playwright MCP) while still prescribing isolation where roles overlap; do not credit silent use of the default fixture."
+        },
+        {
+          "name": "screenshot-naming-convention",
+          "text": "Saves screenshots with an NN_<desc>.png per-flow evidence-folder naming scheme."
+        },
+        {
+          "name": "states-no-credential-persistence-rule",
+          "text": "Explicitly STATES the rule not to persist session/cookie/auth-state to disk (re-login instead) — not merely omitting to do so."
+        },
+        {
+          "name": "scoped-not-full-campaign",
+          "text": "Scoped to the single flow — does not insist on a full multi-run campaign."
+        },
+        {
+          "name": "patient-howto-included",
+          "text": "Includes a short patient-facing how-to in addition to the test procedure."
+        }
+      ]
+    }
+  ]
+}
