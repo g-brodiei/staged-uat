@@ -9,32 +9,52 @@ same dead ends aren't re-walked.
 |---|---|---|
 | 1 | First 3 evals (campaign-structure / manuals-from-evidence / scoped-flow), 23 assertions | with 100% vs base 80% (+20pp). Wins **all** in skill-specific rigor |
 | 2 | Added `tooling-prerequisites-gate` after user feedback (mailmatter API key + MCP, `playwright-cli install --skills`) | eval-0: 12/12 vs 8/12. New assertion discriminated cleanly, no regression |
-| 3 | eval-1 rebuilt with 4 "traps"; eval-2's compound assertion split + credential rule rephrased | eval-2: 7/7 vs 4/7 (gap 0.333→0.429). eval-1: **all 4 traps failed to discriminate** |
-| 4 | Retired the 4 dead assertions; added the cancellation-window trap | (see grading in `iteration-4/`) |
+| 3 | eval-1 rebuilt with 4 "traps"; eval-2's compound assertion split + credential rule rephrased | eval-2: 7/7 vs 4/7 (gap 0.333→0.429). eval-1: all 4 traps appeared not to discriminate — **at n=1** |
+| 4 | Retired the 4 "dead" assertions; added the cancellation-window trap | with-skill 4/5 vs baseline 3/5. Purity discriminator **reversed** vs iter-3 (19 vs 12) |
+| 5 | **Re-ran eval-1 at n=3 per arm** | Settled it: the effect is real, the *threshold* was wrong, and one retired trap was retired too early |
 
-## The central lesson: test *authoring judgment*, not *reading comprehension*
+## The biggest lesson: n=1 conclusions were wrong in *both* directions
 
-The four traps in iteration 3 all failed the same way. Each one hid a fact in the evidence folder and
-asked "will the author notice?" — spec promises a feature findings says doesn't exist; a glossary pushing
-English aliases against on-screen Chinese names; a dangled `PATCH /api/...` workaround; a flow with no
-screenshots inviting a fabricated figure. **The no-skill baseline caught all four unaided.** A capable
-model reads a folder well. That is not where a skill adds value.
+Iterations 3 and 4 drew confident conclusions from a single run per arm. Iteration 5 (n=3) overturned
+several of them:
 
-What *did* discriminate was how the manual is **written for its reader**:
+| Measure | n=1 read | n=3 truth |
+|---|---|---|
+| Total provenance leakage | "0 vs 80 — decisive" then "19 vs 12 — reversed, it's noise" | with-skill **[2, 25, 8]** vs baseline **[50, 45, 33]** — **no overlap** (max 25 < min 33), ~3.7× on the mean. **Real.** |
+| `no-api-workarounds` | "dead trap, baseline passes it" → retired | baseline **1/3 runs** piped `PATCH /api/appointments/{id}` into staff manuals. Weak but real. **Reinstated.** |
+| Zero-total-leak as a pass bar | assumed achievable | fails **0/3 in both arms** — it discriminated nothing because every run emits *some* provenance |
 
-- `no-internal-artifact-references` — **0 leaks vs 80**. The baseline shipped end-user manuals citing
-  `findings #3`, captioned `（證據：artifacts/uat01/…）`, with a `✅ 實測通過` appendix. Correct content,
-  wrong document: a UAT report wearing a manual's clothes. The skill's manual-authoring discipline moves
-  provenance to the index and leaves clean user documentation.
-- `manuals-index-produced` — baseline shipped three orphan files, no index.
+Three habits follow:
 
-Both are about **turning evidence into a deliverable for a specific audience**, which is exactly what the
-skill teaches and what the base model doesn't do by default. Design assertions there.
+1. **Never retire or crown an assertion on n=1.** Both the false negative (a trap called dead) and the
+   false positive (a discriminator called decisive) came from single samples.
+2. **Separate the signal from the threshold.** Leakage was always the right *thing* to measure; "zero
+   leaks" was the wrong *bar*. Report continuous metrics continuously, and set the pass/fail bar on the
+   part that is unambiguously wrong — here, citing `findings #N` at an end user (3/3 vs 1/3), versus a
+   footer noting the doc derives from a UAT run, which is defensible provenance.
+3. **Look at range overlap, not just means.** Non-overlapping ranges at n=3 are far more convincing than
+   a big gap between two single runs.
 
-Corollary: a non-discriminating assertion is not free — it costs grading effort and returns no signal.
-Retire it, even if the rule behind it is genuinely good and stays in the skill. (We retired
-`uses-onscreen-ui-names`, `unimplemented-features-not-presented-as-available`, `no-api-workarounds`,
-`howto-numbered-steps` for exactly this reason; the rules remain in `references/manuals.md`.)
+## Where the skill actually adds value: authoring judgment, not reading comprehension
+
+The traps that ask "will the author *notice* something in the evidence folder?" mostly fail to
+discriminate — a capable model reads a folder well, unaided. Both arms consistently refused to document
+unimplemented features, used on-screen labels over spec aliases, and caught the spec-vs-observed
+cancellation contradiction.
+
+What *does* separate the arms is how the evidence is **turned into a deliverable for a specific
+audience**:
+
+- `manuals-index-produced` — **the most robust discriminator in the whole harness: 5/5 runs across
+  iterations 3–5** (with-skill always ships an index; the baseline ships three orphan files, never once).
+- `no-findings-id-citations` — with-skill 3/3 clean, baseline 1/3. The baseline hands end users manuals
+  citing `findings #3` with `（證據：artifacts/uat01/…）` captions and a `✅ 實測通過` appendix: correct
+  content, wrong document — a UAT report wearing a manual's clothes.
+
+Design assertions there. And note the corollary still holds — a genuinely non-discriminating assertion
+costs grading effort for no signal, so retiring one is right; just retire it on evidence, not on a
+single sample. (`uses-onscreen-ui-names`, `unimplemented-features-not-presented-as-available` and
+`howto-numbered-steps` remain retired; the underlying rules stay in `references/manuals.md`.)
 
 ## Prefer deterministic checks over grader judgment
 

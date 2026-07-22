@@ -11,17 +11,9 @@ with subagents — which is what this skill encodes.
 
 ## Quick start
 
-Install it for every project you work on:
-
 ```bash
-git clone https://github.com/g-brodiei/staged-uat.git ~/.claude/skills/staged-uat
-```
-
-That's the whole install — Claude Code discovers skills by directory. Start (or restart) Claude Code
-and confirm it's there:
-
-```bash
-ls ~/.claude/skills/staged-uat/SKILL.md   # should exist
+/plugin marketplace add g-brodiei/staged-uat
+/plugin install staged-uat@staged-uat
 ```
 
 Then just describe the job in your own words — the skill triggers on its own:
@@ -31,8 +23,8 @@ Then just describe the job in your own words — the skill triggers on its own:
 Or invoke it explicitly with `/staged-uat`.
 
 ⚠️ It drives **real** tools that this repo does not install — see
-[Prerequisites](#prerequisites-not-bundled) before your first run. More install options
-(per-project, symlink) are under [Install](#install).
+[Prerequisites](#prerequisites-not-bundled) before your first run. Other install routes (from source,
+or manually without the plugin system) are under [Installation](#installation).
 
 ## What it does
 
@@ -67,64 +59,59 @@ what's missing rather than improvising:
   (`playwright-cli install --skills` in your project), or a Playwright MCP.
 - **A subagent / Workflow harness** — the orchestration model assumes you can fan work out to subagents.
 
-## Install
+## Installation
 
-Claude Code loads skills from directories — there is no package manager step. Pick whichever scope
-fits; in all three the target directory **must be named `staged-uat`**, because the directory name is
-the skill name.
-
-**1. Global — available in every project (recommended):**
+### From Marketplace (recommended)
 
 ```bash
-git clone https://github.com/g-brodiei/staged-uat.git ~/.claude/skills/staged-uat
+/plugin marketplace add g-brodiei/staged-uat
+/plugin install staged-uat@staged-uat
 ```
 
-**2. Per-project — committable, so teammates get it too:**
+### From Source
 
 ```bash
-git clone https://github.com/g-brodiei/staged-uat.git your-project/.claude/skills/staged-uat
-rm -rf your-project/.claude/skills/staged-uat/.git   # vendor it in, then commit it
+git clone https://github.com/g-brodiei/staged-uat.git
+/plugin install /path/to/staged-uat
 ```
 
-**3. Symlink — one source of truth across many projects:**
+### Manual (no plugin system)
+
+The skill is a plain directory, so you can also drop it in yourself — the target directory **must be
+named `staged-uat`**, since the directory name is the skill name:
 
 ```bash
-git clone https://github.com/g-brodiei/staged-uat.git ~/src/staged-uat
-ln -s ~/src/staged-uat your-project/.claude/skills/staged-uat
+git clone https://github.com/g-brodiei/staged-uat.git /tmp/staged-uat
+cp -r /tmp/staged-uat/skills/staged-uat ~/.claude/skills/staged-uat   # or your-project/.claude/skills/
 ```
-
-Edits to the clone then apply everywhere. (Symlinks don't travel through git, so this is a local
-convenience, not a team setup.)
 
 ### Verify and use
 
-```bash
-ls ~/.claude/skills/staged-uat/SKILL.md    # or your-project/.claude/skills/...
-```
-
-Restart Claude Code so it picks up the new skill. It then triggers **automatically** when you describe
-a matching job ("test all the roles on staging and screenshot each step"), or you can call it directly
-with `/staged-uat`.
+Restart Claude Code, then run `/plugin` to confirm `staged-uat` is installed and enabled. The skill
+triggers **automatically** when you describe a matching job ("test all the roles on staging and
+screenshot each step"), or you can call it directly with `/staged-uat`.
 
 ### Updating
 
 ```bash
-git -C ~/.claude/skills/staged-uat pull
+/plugin marketplace update staged-uat
 ```
 
-The skill files live at the repo root, so cloning *into* a directory named `staged-uat` yields a
-working skill with no further steps. `README.md`, `LICENSE`, `docs/` and `tools/` sit alongside them
-and are ignored by the skill loader.
+Releases are versioned in `.claude-plugin/plugin.json` and tagged `vX.Y.Z`, so the marketplace can tell
+when a newer version is available. See [docs/RELEASING.md](docs/RELEASING.md) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ## What's in here
 
 ```
-SKILL.md          the skill entry point (workflow, non-negotiables, phase map)
-references/       the detailed mechanics, read per-phase
-assets/           a copy-and-fill orchestration script skeleton
-tools/            two reusable checkers (see below)
-evals/            the eval set used to validate the skill
-docs/EVAL-NOTES.md  how it was validated, and the eval-design lessons
+.claude-plugin/    plugin + marketplace manifests (name, version, source)
+skills/staged-uat/ the skill itself
+  SKILL.md           entry point (workflow, non-negotiables, phase map)
+  references/        detailed mechanics, read per-phase
+  assets/            copy-and-fill orchestration script skeleton
+tools/             two reusable checkers (see below)
+evals/             the eval set used to validate the skill
+docs/              EVAL-NOTES.md (validation + lessons), RELEASING.md
 ```
 
 The two checkers in `tools/` are useful on their own when authoring manuals from evidence:
@@ -145,15 +132,22 @@ scoped single flow), graded on objective assertions:
   already does well.
 - **12/12 vs 8/12** on the campaign-structure eval after adding the Phase 0 prerequisites gate.
 
-Two things worth stating plainly rather than burying:
+- **Manuals-from-evidence, re-run at n=3 per arm** to settle an earlier noisy result. The skill produces
+  end-user documentation; the baseline produces test reports wearing a manual's clothes:
 
-1. **The manual-purity discriminator is noisy at n=1.** It measured 0 leaks vs 66 in one iteration and
-   then *reversed* (19 vs 12) in the next. Treat the manuals eval as unproven until someone runs it
-   with n≥3 per arm.
-2. **The skill description was hand-tuned, not optimizer-tuned.** The automated description optimizer
-   was unusable here — its harness runs a bare headless session from a resolved project root with no
-   browser/email tooling, so the skill never gets consulted and recall collapses to ~0 regardless of
-   wording. Its output was discarded.
+  | | with skill | baseline |
+  |---|---|---|
+  | Internal-provenance leakage per run | **2, 25, 8** | **50, 45, 33** (no overlap; ~3.7× on the mean) |
+  | Cites `findings #N` at end users | 0/3 runs | 2/3 runs |
+  | Ships a manuals index | **3/3** | **0/3** |
+
+One thing worth stating plainly rather than burying:
+
+**The skill description was hand-tuned, not optimizer-tuned.** The automated description optimizer was
+unusable here — its harness runs a bare headless session from a resolved project root with no
+browser/email tooling, so the skill never gets consulted and recall collapses to ~0 regardless of
+wording. Its output was discarded, and the shipped description rests on reasoning rather than
+measurement.
 
 Full detail, including the traps that *failed* to discriminate and why, is in
 [`docs/EVAL-NOTES.md`](docs/EVAL-NOTES.md).

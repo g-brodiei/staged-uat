@@ -1,0 +1,12 @@
+{
+  "name": "staged-uat",
+  "description": "Role-based UAT of a live deployed web app: drive every user role through the real UI, capture screenshot evidence, log findings, and author a user manual per role",
+  "version": "1.0.0",
+  "author": {
+    "name": "g-brodiei"
+  },
+  "repository": "https://github.com/g-brodiei/staged-uat",
+  "homepage": "https://github.com/g-brodiei/staged-uat",
+  "license": "MIT",
+  "keywords": ["uat", "testing", "acceptance-testing", "browser-automation", "screenshots", "user-manual", "staging"]
+}

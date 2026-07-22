@@ -41,5 +41,13 @@ print(json.dumps({
     "per_manual": per_file,
     "totals": totals,
     "total_leaks": sum(totals.values()),
+    # `findings_clean` is the PASS/FAIL signal. Citing an internal finding id at an
+    # end user is unambiguously wrong; a footer noting the doc came from a UAT run is
+    # defensible provenance. Measured over n=3 per arm: with-skill 3/3 clean,
+    # baseline 1/3 — whereas a zero-TOTAL-leak bar failed 0/3 in *both* arms and so
+    # discriminated nothing.
+    "findings_clean": totals["findings_citations"] == 0,
+    # `total_leaks` is a useful continuous signal, not a pass/fail bar.
+    # Observed n=3: with-skill [2, 25, 8] vs baseline [50, 45, 33] — no overlap.
     "clean": sum(totals.values()) == 0,
 }, ensure_ascii=False, indent=2))

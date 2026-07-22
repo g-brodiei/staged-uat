@@ -1,0 +1,19 @@
+{
+  "name": "staged-uat",
+  "owner": {
+    "name": "g-brodiei"
+  },
+  "metadata": {
+    "description": "End-to-end UAT of a live multi-role web app, producing screenshot evidence and per-role user manuals"
+  },
+  "plugins": [
+    {
+      "name": "staged-uat",
+      "source": "./",
+      "description": "Drive a live deployed web app through real user journeys across every role: scenario structure from the deployed API, browser + temporary-email automation, screenshot evidence, findings/coverage logs, and a user manual per role",
+      "author": {
+        "name": "g-brodiei"
+      }
+    }
+  ]
+}

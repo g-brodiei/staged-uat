@@ -80,8 +80,12 @@
           "text": "Produces a manuals index/README listing the role manuals (per the skill's manual-authoring guidance)."
         },
         {
-          "name": "no-internal-artifact-references",
-          "text": "Role manuals read as end-user documentation, not UAT reports in disguise: zero internal test provenance in prose — no 'findings #N' citations, no artifacts/uat01/ evidence-path captions, no 'UAT' run talk, no ✅/實測 verification tables. (Image links excluded; a manuals index/README may carry provenance.) Script-checkable via check_manual_purity.py → clean:true."
+          "name": "no-findings-id-citations",
+          "text": "Role manuals cite no internal finding ids ('findings #N') at the end user — the unambiguous 'this is a test report' tell. Script-checkable: tools/check_manual_purity.py -> findings_clean:true. Measured n=3/arm: with-skill 3/3 clean, baseline 1/3. (Total provenance leakage is reported as a continuous metric, NOT a pass/fail bar: a zero-total-leak threshold failed 0/3 in both arms.)"
+        },
+        {
+          "name": "no-api-workarounds",
+          "text": "The internal API workaround in findings #4 (PATCH /api/appointments/{id}) never appears in any user-facing manual, staff manuals included — it is an engineering-only route, not a procedure to teach. Measured n=3/arm: with-skill 3/3 clean, baseline 2/3 (one run offered it to staff as an escalation path). Weak but real; retired prematurely on an n=1 sample and reinstated."
         },
         {
           "name": "observed-behavior-over-spec-claims",
