@@ -9,6 +9,31 @@ It is built for the case where "test it" means a campaign, not a task: several u
 roles, and dozens of scenarios. That only stays coherent if you structure it first and orchestrate it
 with subagents — which is what this skill encodes.
 
+## Quick start
+
+Install it for every project you work on:
+
+```bash
+git clone https://github.com/g-brodiei/staged-uat.git ~/.claude/skills/staged-uat
+```
+
+That's the whole install — Claude Code discovers skills by directory. Start (or restart) Claude Code
+and confirm it's there:
+
+```bash
+ls ~/.claude/skills/staged-uat/SKILL.md   # should exist
+```
+
+Then just describe the job in your own words — the skill triggers on its own:
+
+> *"Walk through our staging site as each role, screenshot every step, and write me a how-to per user type."*
+
+Or invoke it explicitly with `/staged-uat`.
+
+⚠️ It drives **real** tools that this repo does not install — see
+[Prerequisites](#prerequisites-not-bundled) before your first run. More install options
+(per-project, symlink) are under [Install](#install).
+
 ## What it does
 
 Six phases, each with a reference file the model reads when it gets there:
@@ -44,28 +69,52 @@ what's missing rather than improvising:
 
 ## Install
 
-**Global — available in every project:**
+Claude Code loads skills from directories — there is no package manager step. Pick whichever scope
+fits; in all three the target directory **must be named `staged-uat`**, because the directory name is
+the skill name.
+
+**1. Global — available in every project (recommended):**
 
 ```bash
-git clone https://github.com/<you>/staged-uat ~/.claude/skills/staged-uat
+git clone https://github.com/g-brodiei/staged-uat.git ~/.claude/skills/staged-uat
 ```
 
-**Per-project — committable, so teammates get it:**
+**2. Per-project — committable, so teammates get it too:**
 
 ```bash
-git clone https://github.com/<you>/staged-uat your-project/.claude/skills/staged-uat
-rm -rf your-project/.claude/skills/staged-uat/.git   # vendor it into your repo
+git clone https://github.com/g-brodiei/staged-uat.git your-project/.claude/skills/staged-uat
+rm -rf your-project/.claude/skills/staged-uat/.git   # vendor it in, then commit it
 ```
 
-**Symlink — one source of truth while you tune it:**
+**3. Symlink — one source of truth across many projects:**
 
 ```bash
-git clone https://github.com/<you>/staged-uat ~/src/staged-uat
+git clone https://github.com/g-brodiei/staged-uat.git ~/src/staged-uat
 ln -s ~/src/staged-uat your-project/.claude/skills/staged-uat
 ```
 
-The skill files live at the repo root, so cloning *into* a directory named `staged-uat` gives you a
-working skill directly. `README.md`, `LICENSE`, `docs/` and `tools/` are ignored by the skill loader.
+Edits to the clone then apply everywhere. (Symlinks don't travel through git, so this is a local
+convenience, not a team setup.)
+
+### Verify and use
+
+```bash
+ls ~/.claude/skills/staged-uat/SKILL.md    # or your-project/.claude/skills/...
+```
+
+Restart Claude Code so it picks up the new skill. It then triggers **automatically** when you describe
+a matching job ("test all the roles on staging and screenshot each step"), or you can call it directly
+with `/staged-uat`.
+
+### Updating
+
+```bash
+git -C ~/.claude/skills/staged-uat pull
+```
+
+The skill files live at the repo root, so cloning *into* a directory named `staged-uat` yields a
+working skill with no further steps. `README.md`, `LICENSE`, `docs/` and `tools/` sit alongside them
+and are ignored by the skill loader.
 
 ## What's in here
 
