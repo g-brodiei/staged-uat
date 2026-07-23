@@ -83,7 +83,9 @@ Long campaigns hit rate/spend limits and session expiry. Design for resumption:
 - **Individual agents resume from transcript** — you can send a stopped agent a continuation message and it
   picks up with full context.
 - **Sessions expire (JWT TTL)** — every agent prompt must say "if redirected to login, re-login with the
-  ledger credentials," so an expired session self-heals instead of failing the scenario.
+  ledger credentials," so an expired session self-heals instead of failing the scenario. Sessions a
+  subagent left resident in the daemon may also be gone entirely at handoff — treat them as ephemeral
+  (`references/tooling.md`).
 - **Spend limits** mid-run are normal — note where it stopped, resume when lifted.
 
 ## Batching guidance

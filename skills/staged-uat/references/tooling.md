@@ -47,6 +47,17 @@ Temp email is how you receive invites, OTP codes, and release notifications with
 - **NEVER `state-save` auth/session JSON to disk.** (See safety, below.) Sessions persist in the daemon
   across turns; on JWT expiry, just log in again from the ledger. Never `close-all`/`kill-all` a shared set
   of sessions other agents may be using.
+- **Sessions are ephemeral across agent handoffs.** A named session a subagent left resident in the daemon
+  may be gone (daemon restart, TTL, another agent's cleanup) by the time the orchestrator or a later agent
+  looks for it. Never treat a resident session as durable state — every agent must be ready to re-login
+  from the accounts ledger.
+- **Invoke playwright-cli from the directory that owns its config.** It resolves
+  `.playwright/cli.config.json` (browser channel, etc.) **relative to cwd**; invoked from anywhere else it
+  silently spawns a daemon with default config — the tell is the wrong browser or
+  `Chromium distribution 'chrome' is not found`. Fix: kill the stray daemon — run the `kill-all` from the
+  same wrong cwd that spawned it, so it addresses that daemon and not the real one (the one exception to
+  the never-`kill-all` rule; its sessions are unusable anyway, but still confirm no other agent is
+  mid-flow on it) — then relaunch from the config's directory and rebuild sessions from the ledger.
 - **Act by snapshot refs.** `snapshot` first, then `click e15` / `fill e19 "…"`. After navigation or a slow
   SPA load, `sleep 2` then re-`snapshot` (pages often flash a loading state first).
 - **Screenshots are the product.** `screenshot --filename=<abs path>`. Name them `NN_<short-desc>.png` with a
@@ -80,8 +91,14 @@ with a resource the caller genuinely owns (which should return true JSON). The m
 its own infra finding — it degrades UX (users see a generic "load failed" instead of a real message) and it
 can make a security probe's masked 403 look like a breach if you only read the status.
 
-For pure backend endpoints (venue API with an API-key header, no cookies), plain `curl -sS -i` is fine —
-save the exact command + full headers+body to a `.txt` evidence file.
+For pure backend endpoints (venue API with an API-key header, no cookies), plain `curl -sS -i` is fine.
+
+**API-probe evidence mirrors screenshot naming:** save each probe transcript (exact command + full
+headers + body) as `artifacts/<run>/<flow>/NN_<name>.txt`, sharing the flow's step numbering so probes
+and screenshots interleave as one evidence sequence. **Redact before write, not after:** keep secrets in
+shell variables (`-H "X-Api-Key: $KEY"`) so the saved transcript is redacted by construction — never echo
+a real key/token into an evidence file. Don't store API keys between runs either: issue per run, hold only
+in shell variables, revoke when the run ends — and immediately revoke any key that does land in a file.
 
 ## Safety mechanics (non-negotiable)
 

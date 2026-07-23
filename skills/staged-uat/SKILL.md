@@ -88,9 +88,10 @@ Verify, and surface any gap to the user (concrete setup in `references/tooling.m
 - **Subagent/Workflow harness** available (this skill assumes it).
 
 Only once the tools pass: curl each staging host for reachability, and **find the deployed API spec** — a
-Swagger UI almost always links its raw OpenAPI docs (e.g. `/docs` → `/docs/spec/*.yaml`); download them,
-they are the authoritative inventory of what's *actually* deployed (often more, or different, than the
-source or the PRD).
+Swagger UI almost always links its raw OpenAPI docs (e.g. `/docs` → `/docs/spec/*.yaml`); download them
+**into `artifacts/<run>/openapi/`** — they are the authoritative inventory of what's *actually* deployed
+(often more, or different, than the source or the PRD), and the persisted copies are what a later delta
+round diffs against.
 
 ### Phase 1 — Build the test base
 Turn the spec + deployed API into a **scenario inventory** and a written **test-base guideline** the whole
@@ -135,6 +136,8 @@ Not every invocation is a 6-run campaign. Match the effort:
 - **"Test just the invite→signup→first-login flow and screenshot it"** → Phase 0 recon + one scenario from
   Phase 3 with the `references/tooling.md` idioms; skip the full matrix.
 - **"UAT the whole platform and give me manuals"** → the full arc, Phases 0–6.
+- **"The spec changed" / "re-test what we found" (a prior round's artifacts exist)** → a **delta round**,
+  not a fresh campaign: `references/delta-round.md`.
 
 When in doubt, still do Phase 0 (recon) and a lightweight Phase 1 (know your roles and your API surface)
 before executing — skipping them is how campaigns drift into ad-hoc flailing.
@@ -147,5 +150,6 @@ before executing — skipping them is how campaigns drift into ad-hoc flailing.
 | `references/orchestration.md` | Phase 3: staged runs, sequential bootstrap → parallel fan-out, the structured-return schema, session/mailbox assignment, interruption recovery |
 | `references/tooling.md` | Phase 3: temp-email idioms, browser-session hygiene, same-origin API probing, the CDN-masking classifier, screenshot naming, safety mechanics |
 | `references/artifacts.md` | Phases 4 & 6: formats for findings / coverage / accounts / manifest, and the executive report |
+| `references/delta-round.md` | Round N (a prior round's artifacts exist): what-changed detection with canary probes, findings re-baseline verdicts, regression-set selection |
 | `references/manuals.md` | Phase 5: authoring per-role manuals from evidence |
 | `assets/uat-workflow-template.js` | Phase 3: copy-and-fill orchestration script skeleton (bootstrap → fan-out → consolidate) |
