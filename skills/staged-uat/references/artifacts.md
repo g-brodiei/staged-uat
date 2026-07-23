@@ -1,7 +1,8 @@
 # Artifacts: findings, coverage, accounts, manifest, report (Phases 4 & 6)
 
-The campaign's durable output is a small set of living documents plus the screenshot tree. Keep them under
-`artifacts/<run>/` (run ids `uat01`, `uat02`, …). Update them **after every run**, not at the end.
+The campaign's durable output is a small set of living documents plus the screenshot tree and the
+deployed API specs persisted in Phase 0 (`artifacts/<run>/openapi/`). Keep them under `artifacts/<run>/`
+(run ids `uat01`, `uat02`, …). Update them **after every run**, not at the end.
 
 ## findings.md — the numbered observation log
 
@@ -17,11 +18,17 @@ Tags to use:
 - `[UX]` — confusing but not broken.
 - `[觀察]` / `[Note]` — confirmed-correct behavior worth recording (positives matter for sign-off).
 
+Give every spec-anchored finding a **`spec-ref`** — the file + section + line of the spec claim it
+contradicts or verifies (e.g. `prd/01_prd.md §5.6 L389`). This is what lets a delta round
+(`references/delta-round.md`) re-judge a 100-finding ledger semi-mechanically against a revised spec,
+instead of re-locating every claim by grep.
+
 Group by area with headings. Example entries:
 
 ```
 26. [Spec-drift-major] Cancellation window not enforced: spec §4.3 restricts patient self-cancel to
     ≥24h before the appointment, but a cancel at T-2h succeeded unblocked (PAT-CANCEL evidence).
+    spec-ref: prd/01_prd.md §4.3 L112
 62. [Spec-drift] Day-sheet print missing: the permission matrix grants Front-desk "print day sheet",
     but no print control exists anywhere in the console (DOM scan: 0 matches).
 114. [Security PASS] 16 cross-tier/role probes, 0 breach / 0 mutation: cookie path-lock + CORS + backend
@@ -71,6 +78,12 @@ each section maps to *who decides* and *what action*:
 
 Sort within each section by severity. Reference findings by number. Measure and cite anything that maps to a
 **contract SLA** (release latency, job processing time, response time) — those are acceptance-gating.
+
+## rebaseline.md — delta rounds only
+
+A round N run re-judges every prior finding against the changed spec/deployment and records one verdict
+per finding here (`# · verdict · rationale · spec-ref`). Verdict taxonomy and workflow:
+`references/delta-round.md`.
 
 ## Bookkeeping discipline
 

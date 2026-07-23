@@ -19,7 +19,8 @@ A deployed platform has three descriptions of itself, and they disagree. You nee
 
 **Find the deployed API spec first.** A Swagger UI page (`/docs`, `/api-docs`, `/swagger`) almost always
 declares its raw spec URL(s) in the page source — grep the HTML for `.yaml`/`.json`/`urls:`. Download every
-spec (there's often one per namespace: consumer / admin / super / venue). Parse them into a flat endpoint
+spec (there's often one per namespace: consumer / admin / super / venue) into `artifacts/<run>/openapi/` —
+persisted per round, so a later delta round has something to diff against. Parse them into a flat endpoint
 list (method + path + summary + tags) — this is your **coverage denominator**: the set of behaviors that
 exist to be tested.
 
@@ -79,6 +80,6 @@ it silently in your own understanding; surface it.
   campaign refers back to.
 - A **discovery/plan** doc holding the account bootstrap chain, the route sweep checklists per site, and the
   numbered scenario matrix.
-- The downloaded API specs and the endpoint inventory.
+- The downloaded API specs (persisted under `artifacts/<run>/openapi/`) and the endpoint inventory.
 
 Keep both docs living — you'll update the matrix with status and add drift as you execute.
