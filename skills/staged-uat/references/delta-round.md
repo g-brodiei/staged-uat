@@ -5,6 +5,12 @@ revision**, a suspected **redeploy**, or "re-test what we found". A delta round 
 its deliverable is a **verdict on every prior finding** plus **targeted re-execution**, not a full matrix
 rerun. Run ids continue the sequence (`uat02`, `uat03`, …).
 
+**A delta round is not a substitute for a periodic full re-verification.** Before any **sign-off /
+closure / acceptance** gate — or after a major refactor — do not run a delta: run
+`references/full-reverification.md`, which re-clicks the entire matrix and **forbids `PASS by reference`**.
+Reaching for a delta at a closure gate is the wrong mode; that is exactly how a full run silently shrinks
+to a subset and misses what only a fresh re-click would catch.
+
 ## Step 1 — Establish what actually changed (never assume)
 
 Two axes move independently between rounds; check both:
@@ -59,6 +65,10 @@ Rerun only:
 Everything that passed round N−1 under a spec claim *and* a deployment that both held still stays green
 by reference — mark it so in the coverage matrix explicitly ("PASS (uat01, unchanged)") rather than
 re-running or leaving it ambiguous.
+
+**This green-by-reference allowance is for routine iterations only.** It is legitimate in a delta round and
+**forbidden at a sign-off / closure / acceptance gate**, where every row must be re-clicked fresh. If this
+round is a closure gate, stop selecting a regression set and switch to `references/full-reverification.md`.
 
 ## Step 4 — Execute as a (smaller) normal round
 

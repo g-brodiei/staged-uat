@@ -106,6 +106,22 @@ the per-site route sweep, and the numbered **scenario matrix** grouped by role/a
 its preconditions, steps, expected result, and evidence target. Decide the run batching (what's sequential
 vs parallel). → **`references/scenario-matrix.md`** (matrix) + **`references/orchestration.md`** (batching)
 
+### Round-type gate — choose before you execute (before Phase 3)
+Once a campaign has round-1 artifacts, every later round is one of **three** types. Pick deliberately —
+Phase 3's scope depends on it, and picking wrong at a sign-off gate is how a full run silently becomes a
+delta.
+
+| Round type | When | Reference |
+|---|---|---|
+| **First campaign** | no prior artifacts exist | the full arc below (Phases 0–6) |
+| **Delta iteration** | routine round N — spec revised / "re-test what we found"; unchanged scenarios stay green by reference | `references/delta-round.md` |
+| **Full re-verification** | sign-off · closure · acceptance · post-major-refactor · on request; **re-click the entire matrix, `PASS by reference` forbidden** | `references/full-reverification.md` |
+
+**Hard gate:** a **sign-off / closure / acceptance** round MUST run a full re-verification — or record an
+**explicit waiver** in that round's `PLAN.md` and coverage matrix (what was covered by reference instead,
+and who accepted the risk). A silent delta at a closure gate is not an option, and a delta round is not a
+substitute for a periodic full re-verification. → `references/full-reverification.md`
+
 ### Phase 3 — Execute in staged runs (orchestrated)
 **Bootstrap first, sequentially** (you can't invite a tenant's staff before the tenant exists). Then **fan
 independent scenarios out to subagents in parallel**, each on its own browser session(s) and mailbox(es),
@@ -138,6 +154,9 @@ Not every invocation is a 6-run campaign. Match the effort:
 - **"UAT the whole platform and give me manuals"** → the full arc, Phases 0–6.
 - **"The spec changed" / "re-test what we found" (a prior round's artifacts exist)** → a **delta round**,
   not a fresh campaign: `references/delta-round.md`.
+- **"Sign off / close out / re-verify the whole thing before acceptance"** (prior artifacts exist and this
+  is a gate) → a **full re-verification**, not a delta: re-click the entire matrix, `PASS by reference`
+  forbidden. `references/full-reverification.md`.
 
 When in doubt, still do Phase 0 (recon) and a lightweight Phase 1 (know your roles and your API surface)
 before executing — skipping them is how campaigns drift into ad-hoc flailing.
@@ -151,5 +170,6 @@ before executing — skipping them is how campaigns drift into ad-hoc flailing.
 | `references/tooling.md` | Phase 3: temp-email idioms, browser-session hygiene, same-origin API probing, the CDN-masking classifier, screenshot naming, safety mechanics |
 | `references/artifacts.md` | Phases 4 & 6: formats for findings / coverage / accounts / manifest, and the executive report |
 | `references/delta-round.md` | Round N (a prior round's artifacts exist): what-changed detection with canary probes, findings re-baseline verdicts, regression-set selection |
+| `references/full-reverification.md` | Sign-off / closure / acceptance / post-refactor round: re-clicking the whole matrix fresh (no PASS-by-reference), the hard gate + waiver, coverage-completeness pre-flight, race-free partition, destructive-scenario taxonomy |
 | `references/manuals.md` | Phase 5: authoring per-role manuals from evidence |
 | `assets/uat-workflow-template.js` | Phase 3: copy-and-fill orchestration script skeleton (bootstrap → fan-out → consolidate) |
