@@ -12,6 +12,12 @@ evidence path** this round — no scenario inherits a pass from a prior round, n
 spec or deployment looks. A delta round leans on "green by reference" by design; carrying that habit into
 a closure gate is exactly the failure this mode exists to prevent.
 
+Re-clicking the whole matrix is only affordable because you **replay the round-1 script suite**
+(`references/replayable-scripts.md`) headlessly rather than re-driving every click by hand; the LLM budget
+then goes to triaging replay failures, spec-conformance judgment, and hunting new issues. A replayed green
+is a *mechanical* pass, not a spec pass — judgment still runs on top (Step 5's re-probe and per-scenario
+wording review are not something a selector can decide).
+
 ## The hard gate — when this mode is mandatory
 
 **A sign-off / closure / acceptance round MUST run a full re-verification.** The only alternative is an

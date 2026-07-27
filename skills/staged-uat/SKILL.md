@@ -126,8 +126,10 @@ substitute for a periodic full re-verification. → `references/full-reverificat
 **Bootstrap first, sequentially** (you can't invite a tenant's staff before the tenant exists). Then **fan
 independent scenarios out to subagents in parallel**, each on its own browser session(s) and mailbox(es),
 each returning a structured result. Consolidate after each run; resume cleanly across interruptions. Use
-the bundled workflow template as the skeleton. → **`references/orchestration.md`** + **`references/tooling.md`**
-+ **`assets/uat-workflow-template.js`**
+the bundled workflow template as the skeleton. On a **first campaign**, capture each successful scenario as
+a **replayable script** as you drive it, so delta and full-re-verification rounds replay the suite instead
+of re-improvising every click. → **`references/orchestration.md`** + **`references/tooling.md`**
++ **`references/replayable-scripts.md`** + **`assets/uat-workflow-template.js`**
 
 ### Phase 4 — Consolidate evidence
 Maintain the living artifact set across runs: a **findings log** (numbered, severity-tagged, exact wording),
@@ -171,5 +173,6 @@ before executing — skipping them is how campaigns drift into ad-hoc flailing.
 | `references/artifacts.md` | Phases 4 & 6: formats for findings / coverage / accounts / manifest, and the executive report |
 | `references/delta-round.md` | Round N (a prior round's artifacts exist): what-changed detection with canary probes, findings re-baseline verdicts, regression-set selection |
 | `references/full-reverification.md` | Sign-off / closure / acceptance / post-refactor round: re-clicking the whole matrix fresh (no PASS-by-reference), the hard gate + waiver, coverage-completeness pre-flight, race-free partition, destructive-scenario taxonomy |
+| `references/replayable-scripts.md` | Phase 3 (first campaign onward): capturing each scenario as a replayable script so later rounds replay instead of re-driving; stable-locator rule; the recorder/runner gate; script-failure triage |
 | `references/manuals.md` | Phase 5: authoring per-role manuals from evidence |
 | `assets/uat-workflow-template.js` | Phase 3: copy-and-fill orchestration script skeleton (bootstrap → fan-out → consolidate) |
