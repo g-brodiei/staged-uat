@@ -29,6 +29,7 @@ chain data between phases. Require this schema:
   "status": "PASS | PARTIAL | FAIL",
   "summary": "one paragraph",
   "evidence": ["absolute/path/NN_desc.png", "..."],
+  "scripts": ["e2e/<flow-id>.spec.ts", "..."],
   "accounts": [{"role": "...", "email": "...", "password": "...", "note": "..."}],
   "observations": ["exact-UI-wording findings, drift, bugs, UX notes"],
   "data": {"ids": "...", "links": "...", "anything later phases need": "..."}
@@ -38,6 +39,9 @@ chain data between phases. Require this schema:
 - `PARTIAL` means the flow completed but an assertion deviated or a sub-step was blocked — this is the most
   common and most valuable status; it's where drift and bugs surface.
 - `data` is how you pass a captured invite link / OTP-derived state / new record id to a later stage.
+- `scripts` (first campaign) is the path to the **replayable script** the agent emitted for each scenario
+  it drove — this is what lets later rounds replay instead of re-derive (`references/replayable-scripts.md`).
+  Leave it empty for a scenario that legitimately can't be scripted, and say why in `observations`.
 - `observations` must quote the **actual on-screen text**, because that text becomes both a finding and
   manual copy later.
 

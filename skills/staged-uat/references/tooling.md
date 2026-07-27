@@ -59,7 +59,10 @@ Temp email is how you receive invites, OTP codes, and release notifications with
   the never-`kill-all` rule; its sessions are unusable anyway, but still confirm no other agent is
   mid-flow on it) — then relaunch from the config's directory and rebuild sessions from the ledger.
 - **Act by snapshot refs.** `snapshot` first, then `click e15` / `fill e19 "…"`. After navigation or a slow
-  SPA load, `sleep 2` then re-`snapshot` (pages often flash a loading state first).
+  SPA load, `sleep 2` then re-`snapshot` (pages often flash a loading state first). This is for **live**
+  driving. When you are also emitting a **replayable script** (first campaign onward), capture a **durable
+  locator** for the script — `getByRole`/`getByTestId`/stable CSS — not the `e15` ref, which regenerates
+  every snapshot and will not survive a rerun (`references/replayable-scripts.md`).
 - **Screenshots are the product.** `screenshot --filename=<abs path>`. Name them `NN_<short-desc>.png` with a
   two-digit step index, one folder per flow (`artifacts/<run>/<flow-id>/NN_desc.png`). Consistent naming is
   what makes the manifest and the manuals possible.

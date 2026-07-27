@@ -38,7 +38,10 @@ Group by area with headings. Example entries:
 ## coverage.md — the scenario status matrix
 
 One row per scenario (mirrors the Phase-2 matrix), flipped to its outcome as runs complete. Columns:
-id · scenario · status (✅ PASS / ◐ PARTIAL / ⬜ not-run) · evidence folder · note (with `#`-refs to findings).
+id · scenario · status (✅ PASS / ◐ PARTIAL / ⬜ not-run) · evidence folder · **script** (path to the
+replayable script, or `no-script` + the destructive-class per `references/replayable-scripts.md`) ·
+note (with `#`-refs to findings). The script column is what makes a later round's coverage mechanical: a
+row with a script replays; a row with `no-script` is an explicit, visible gap, never a silent pass.
 Keep a **"not yet executed"** section listing what's deliberately deferred and *why* (needs a live wait,
 needs test data you don't have, time-bound) — silence reads as "covered," so name the gaps.
 

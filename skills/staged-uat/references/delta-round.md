@@ -77,6 +77,11 @@ Same orchestration, artifact, and safety conventions as any run: new run id, fin
 and the **accounts ledger carries forward** as the re-login source. Expect browser sessions from the
 prior round to be gone — re-login from the ledger, don't hunt for resident sessions.
 
+**Replay the round-1 script suite for the regression set** (`references/replayable-scripts.md`) rather than
+re-driving it click by click; a replay failure is a signal to **triage** — real regression (→ finding),
+intended UI change (→ re-derive + update the script), or artifact rot (→ fix the script) — never a silent
+skip. Reserve LLM tokens for that triage and for spec-conformance judgment on what replayed green.
+
 If the round invalidated manual content — a feature the revision removed, a permission step that
 changed, a "known limitation" now verdicted fixed — patch the affected sections of the existing role
 manuals per `references/manuals.md`; don't re-author the set.
