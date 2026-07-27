@@ -101,6 +101,58 @@ Releases are versioned in `.claude-plugin/plugin.json` and tagged `vX.Y.Z`, so t
 when a newer version is available. See [docs/RELEASING.md](docs/RELEASING.md) and
 [CHANGELOG.md](CHANGELOG.md).
 
+## Commands
+
+Every command this plugin surfaces, and how each one works.
+
+### Plugin management — Claude Code slash commands
+
+| Command | How it works |
+|---|---|
+| `/plugin marketplace add g-brodiei/staged-uat` | Registers this repo as a marketplace by reading its `.claude-plugin/marketplace.json`. Run once. |
+| `/plugin install staged-uat@staged-uat` | Installs the `staged-uat` plugin from the `staged-uat` marketplace — the `plugin@marketplace` form. |
+| `/plugin marketplace update staged-uat` | Re-fetches the marketplace and upgrades to the newest tagged `vX.Y.Z`; it compares against `version` in `.claude-plugin/plugin.json` to know an install is stale. |
+| `/plugin` | Lists installed plugins — use it to confirm `staged-uat` is enabled. |
+
+### Running the skill
+
+The skill has no command of its own beyond its name. It **triggers automatically** when you describe a
+matching job in plain language (*"test every role on staging and screenshot each step"*); to invoke it
+explicitly, run **`/staged-uat`**. Either way the model reads `SKILL.md` and works the six phases, pulling
+in each `references/*.md` as it reaches that phase.
+
+### Evidence checkers — `tools/`
+
+Two deterministic Python checkers, useful standalone while authoring or reviewing the role manuals
+(Phase 5). Each takes a single argument — a manuals directory laid out as `<manuals_dir>/<role>/index.md`
+— takes **no flags**, reads nothing over the network, and prints a **JSON verdict to stdout** (they signal
+through the JSON booleans, not an exit code).
+
+**`python3 tools/check_links.py <manuals_dir>`** — *do all the figures resolve?*
+Finds every `![alt](path)` image in each `<role>/index.md` and, for each local path (`http(s)://` and
+`data:` URIs are skipped), resolves it relative to that manual and checks the file exists.
+
+```json
+{ "manuals": 4, "figures": 108, "dead_links": [ { "manual": "primary/index.md", "path": "09_missing.png" } ], "all_resolve": true }
+```
+
+`all_resolve` is true only when there are **no** dead links **and** at least one figure was found — an
+empty manual is not a pass. Catches fabricated or mis-pathed figures before manuals ship.
+
+**`python3 tools/check_manual_purity.py <manuals_dir>`** — *do the manuals read as end-user docs, not UAT
+reports in disguise?*
+Strips image markdown first (an `![](../artifacts/…)` path is legitimate), then counts internal
+test-provenance leaking into the **visible prose**: `findings #N` citations, `artifacts/uatN/` paths,
+`UAT` mentions, and test-speak (`實測` / `測試中` / `驗證通過` / `本次測試`).
+
+```json
+{ "role_manuals": 4, "per_manual": { "primary": { "findings_citations": 0 } }, "totals": {}, "total_leaks": 8, "findings_clean": true, "clean": false }
+```
+
+`findings_clean` (no `findings #N` cited at an end user) is the pass/fail signal — that one is
+unambiguously wrong. `total_leaks` / `clean` are a stricter continuous signal: a footer noting the doc came
+from a UAT run is defensible provenance, so `clean: false` is not automatically a failure.
+
 ## What's in here
 
 ```
@@ -114,12 +166,8 @@ evals/             the eval set used to validate the skill
 docs/              EVAL-NOTES.md (validation + lessons), RELEASING.md
 ```
 
-The two checkers in `tools/` are useful on their own when authoring manuals from evidence:
-
-```bash
-python3 tools/check_links.py <manuals_dir>          # every ![](…) resolves; catches fabricated figures
-python3 tools/check_manual_purity.py <manuals_dir>  # no internal test provenance leaked into user docs
-```
+The two checkers in `tools/` are useful on their own when authoring manuals from evidence — see
+[Commands](#commands) for exactly what each one checks and the JSON it prints.
 
 ## How it was validated — and the caveats
 
